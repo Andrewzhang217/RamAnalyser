@@ -1,4 +1,0 @@
-/Applications/CLion.app/Contents/bin/cmake/mac/bin/cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_MAKE_PROGRAM=/Applications/CLion.app/Contents/bin/ninja/mac/ninja -G Ninja /Users/zhangguangzesheng/Desktop/ASTAR/RamAnalyser
--- Configuring done
--- Generating done
--- Build files have been written to: /Users/zhangguangzesheng/Desktop/ASTAR/RamAnalyser/cmake-build-debug
