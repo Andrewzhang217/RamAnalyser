@@ -28,7 +28,7 @@ struct option options[] = {
         {"minhash", no_argument, nullptr, 'M'},
         {"threads", required_argument, nullptr, 't'},
         {"help", no_argument, nullptr, 'h'},
-        {nullptr, 0, nullptr, 0}
+        {nullptr, no_argument, nullptr, 0}
 };
 
 std::unique_ptr<bioparser::Parser<biosoup::NucleicAcid>>
