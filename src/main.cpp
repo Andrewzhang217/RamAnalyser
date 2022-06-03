@@ -67,7 +67,7 @@ CreateParser(const std::string &path) {
 
 void Help() {
     std::cout <<
-              "usage: ram [options ...] <target> [<sequences>]\n"
+              "usage: RamAnalyser [options ...] <target> [<sequences>]\n"
               "\n"
               "  # default output is stdout\n"
               "  <target>/<sequences> \n"
