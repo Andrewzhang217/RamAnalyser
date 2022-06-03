@@ -29,7 +29,7 @@ MinimizerEngine::MinimizerEngine(
 
 std::uint32_t MinimizerEngine::Index::Find(
         std::uint64_t key,
-        const std::uint64_t** dst) const {
+        const std::uint64_t **dst) const {
     auto it = locator.find(key << 1);
     if (it == locator.end()) {
         return 0;
@@ -47,7 +47,7 @@ void MinimizerEngine::Minimize(
         std::vector<std::unique_ptr<biosoup::NucleicAcid>>::const_iterator last,
         bool minhash) {
 
-    for (auto& it : index_) {
+    for (auto &it : index_) {
         it.origins.clear();
         it.locator.clear();
     }
@@ -66,14 +66,14 @@ void MinimizerEngine::Minimize(
             for (; first != last && batch_size < 50000000; ++first) {
                 batch_size += (*first)->inflated_len;
                 futures.emplace_back(thread_pool_->Submit(
-                        [&] (decltype(first) it) -> std::vector<Kmer> {
+                        [&](decltype(first) it) -> std::vector<Kmer> {
                             return Minimize(*it, minhash);
                         },
                         first));
             }
-            for (auto& it : futures) {
-                for (const auto& jt : it.get()) {
-                    auto& m = minimizers[jt.value & mask];
+            for (auto &it : futures) {
+                for (const auto &jt : it.get()) {
+                    auto &m = minimizers[jt.value & mask];
                     if (m.capacity() == m.size()) {
                         m.reserve(m.capacity() * 1.5);
                     }
@@ -87,7 +87,7 @@ void MinimizerEngine::Minimize(
         std::vector<std::future<std::pair<std::size_t, std::size_t>>> futures;
         for (std::uint32_t i = 0; i < minimizers.size(); ++i) {
             futures.emplace_back(thread_pool_->Submit(
-                    [&] (std::uint32_t i) -> std::pair<std::size_t, std::size_t> {
+                    [&](std::uint32_t i) -> std::pair<std::size_t, std::size_t> {
                         if (minimizers[i].empty()) {
                             return std::make_pair(0, 0);
                         }
@@ -161,8 +161,8 @@ void MinimizerEngine::Filter(double frequency) {
     }
 
     std::vector<std::uint32_t> occurrences;
-    for (const auto& it : index_) {
-        for (const auto& jt : it.locator) {
+    for (const auto &it : index_) {
+        for (const auto &jt : it.locator) {
             if (jt.first & 1) {
                 occurrences.emplace_back(1);
             } else {
@@ -184,25 +184,25 @@ void MinimizerEngine::Filter(double frequency) {
 }
 
 std::vector<biosoup::Overlap> MinimizerEngine::Map(
-        const std::unique_ptr<biosoup::NucleicAcid>& sequence,
+        const std::unique_ptr<biosoup::NucleicAcid> &sequence,
         bool avoid_equal,
         bool avoid_symmetric,
         bool minhash,
-        std::vector<std::uint32_t>* filtered) const {
+        std::vector<std::uint32_t> *filtered) const {
     auto sketch = Minimize(sequence, minhash);
     if (sketch.empty()) {
         return std::vector<biosoup::Overlap>{};
     }
 
     std::vector<Match> matches;
-    auto add_match = [&] (const Kmer& kmer, uint64_t origin) -> void {
-        auto id = [] (std::uint64_t origin) -> std::uint32_t {
+    auto add_match = [&](const Kmer &kmer, uint64_t origin) -> void {
+        auto id = [](std::uint64_t origin) -> std::uint32_t {
             return static_cast<std::uint32_t>(origin >> 32);
         };
-        auto position = [] (std::uint64_t origin) -> std::uint32_t {
+        auto position = [](std::uint64_t origin) -> std::uint32_t {
             return static_cast<std::uint32_t>(origin) >> 1;
         };
-        auto strand = [] (std::uint64_t origin) -> bool {
+        auto strand = [](std::uint64_t origin) -> bool {
             return origin & 1;
         };
 
@@ -227,16 +227,16 @@ std::vector<biosoup::Overlap> MinimizerEngine::Map(
     };
 
     struct Hit {
-        const Kmer* kmer;
+        const Kmer *kmer;
         std::uint32_t n;
-        const uint64_t* origins;
+        const uint64_t *origins;
 
-        Hit(const Kmer* kmer, std::uint32_t n, const uint64_t* origins)
+        Hit(const Kmer *kmer, std::uint32_t n, const uint64_t *origins)
                 : kmer(kmer),
                   n(n),
                   origins(origins) {}
 
-        bool operator<(const Hit& other) const {
+        bool operator<(const Hit &other) const {
             return n < other.n;
         }
     };
@@ -247,9 +247,9 @@ std::vector<biosoup::Overlap> MinimizerEngine::Map(
 
     sketch.emplace_back(-1, sequence->inflated_len << 1);  // stop dummy
 
-    for (const auto& kmer : sketch) {
+    for (const auto &kmer : sketch) {
         std::uint32_t i = kmer.value & mask;
-        const uint64_t* origins = nullptr;
+        const uint64_t *origins = nullptr;
         auto n = index_[i].Find(kmer.value, &origins);
         if (n > occurrence_) {
             filtered_hits.emplace_back(&kmer, n, origins);
@@ -285,8 +285,8 @@ std::vector<biosoup::Overlap> MinimizerEngine::Map(
 }
 
 std::vector<biosoup::Overlap> MinimizerEngine::Map(
-        const std::unique_ptr<biosoup::NucleicAcid>& lhs,
-        const std::unique_ptr<biosoup::NucleicAcid>& rhs,
+        const std::unique_ptr<biosoup::NucleicAcid> &lhs,
+        const std::unique_ptr<biosoup::NucleicAcid> &rhs,
         bool minhash) const {
 
     auto lhs_sketch = Minimize(lhs, minhash);
@@ -339,7 +339,7 @@ std::vector<biosoup::Overlap> MinimizerEngine::Map(
 
 std::vector<biosoup::Overlap> MinimizerEngine::Chain(
         std::uint64_t lhs_id,
-        std::vector<Match>&& matches) const {
+        std::vector<Match> &&matches) const {
     RadixSort(matches.begin(), matches.end(), 64, Match::SortByGroup);
     matches.emplace_back(-1, -1);  // stop dummy
 
@@ -361,7 +361,7 @@ std::vector<biosoup::Overlap> MinimizerEngine::Chain(
     }
 
     std::vector<biosoup::Overlap> dst;
-    for (const auto& it : intervals) {
+    for (const auto &it : intervals) {
         std::uint64_t j = it.first;
         std::uint64_t i = it.second;
 
@@ -455,7 +455,7 @@ std::vector<biosoup::Overlap> MinimizerEngine::Chain(
 }
 
 std::vector<MinimizerEngine::Kmer> MinimizerEngine::Minimize(
-        const std::unique_ptr<biosoup::NucleicAcid>& sequence,
+        const std::unique_ptr<biosoup::NucleicAcid> &sequence,
         bool minhash) const {
     if (sequence->inflated_len < k_) {
         return std::vector<Kmer>{};
@@ -463,7 +463,7 @@ std::vector<MinimizerEngine::Kmer> MinimizerEngine::Minimize(
 
     std::uint64_t mask = (1ULL << (k_ * 2)) - 1;
 
-    auto hash = [&] (std::uint64_t key) -> std::uint64_t {
+    auto hash = [&](std::uint64_t key) -> std::uint64_t {
         key = ((~key) + (key << 21)) & mask;
         key = key ^ (key >> 24);
         key = ((key + (key << 3)) + (key << 8)) & mask;
@@ -475,13 +475,13 @@ std::vector<MinimizerEngine::Kmer> MinimizerEngine::Minimize(
     };
 
     std::deque<Kmer> window;
-    auto window_add = [&] (std::uint64_t value, std::uint64_t location) -> void {
+    auto window_add = [&](std::uint64_t value, std::uint64_t location) -> void {
         while (!window.empty() && window.back().value > value) {
             window.pop_back();
         }
         window.emplace_back(value, location);
     };
-    auto window_update = [&] (std::uint32_t position) -> void {
+    auto window_update = [&](std::uint32_t position) -> void {
         while (!window.empty() && (window.front().position()) < position) {
             window.pop_front();
         }

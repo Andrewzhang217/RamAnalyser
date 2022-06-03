@@ -24,11 +24,11 @@ class MinimizerEngine {
             std::uint32_t matches = 100,
             std::uint32_t gap = 10000);
 
-    MinimizerEngine(const MinimizerEngine&) = delete;
-    MinimizerEngine& operator=(const MinimizerEngine&) = delete;
+    MinimizerEngine(const MinimizerEngine &) = delete;
+    MinimizerEngine &operator=(const MinimizerEngine &) = delete;
 
-    MinimizerEngine(MinimizerEngine&&) = default;
-    MinimizerEngine& operator=(MinimizerEngine&&) = default;
+    MinimizerEngine(MinimizerEngine &&) = default;
+    MinimizerEngine &operator=(MinimizerEngine &&) = default;
 
     ~MinimizerEngine() = default;
 
@@ -44,16 +44,16 @@ class MinimizerEngine {
 
     // find overlaps in preconstructed minimizer index
     std::vector<biosoup::Overlap> Map(
-            const std::unique_ptr<biosoup::NucleicAcid>& sequence,
+            const std::unique_ptr<biosoup::NucleicAcid> &sequence,
             bool avoid_equal,  // ignore overlaps in which lhs_id == rhs_id
             bool avoid_symmetric,  // ignore overlaps in which lhs_id > rhs_id
             bool minhash = false,  // only lhs
-            std::vector<std::uint32_t>* filtered = nullptr) const;
+            std::vector<std::uint32_t> *filtered = nullptr) const;
 
     // find overlaps between a pair of sequences
     std::vector<biosoup::Overlap> Map(
-            const std::unique_ptr<biosoup::NucleicAcid>& lhs,
-            const std::unique_ptr<biosoup::NucleicAcid>& rhs,
+            const std::unique_ptr<biosoup::NucleicAcid> &lhs,
+            const std::unique_ptr<biosoup::NucleicAcid> &rhs,
             bool minhash = false) const;  // only lhs
 
   private:
@@ -77,11 +77,11 @@ class MinimizerEngine {
             return origin & 1;
         }
 
-        static std::uint64_t SortByValue(const Kmer& kmer) {
+        static std::uint64_t SortByValue(const Kmer &kmer) {
             return kmer.value;
         }
 
-        static std::uint64_t SortByOrigin(const Kmer& kmer) {
+        static std::uint64_t SortByOrigin(const Kmer &kmer) {
             return kmer.origin;
         }
 
@@ -117,10 +117,10 @@ class MinimizerEngine {
             return static_cast<std::uint32_t>(positions);
         }
 
-        static std::uint64_t SortByGroup(const Match& match) {
+        static std::uint64_t SortByGroup(const Match &match) {
             return match.group;
         }
-        static std::uint64_t SortByPositions(const Match& match) {
+        static std::uint64_t SortByPositions(const Match &match) {
             return match.positions;
         }
 
@@ -132,7 +132,7 @@ class MinimizerEngine {
       public:
         Index() = default;
 
-        std::uint32_t Find(std::uint64_t key, const std::uint64_t** dst) const;
+        std::uint32_t Find(std::uint64_t key, const std::uint64_t **dst) const;
 
         struct Hash {
             std::size_t operator()(std::uint64_t key) const {
@@ -150,12 +150,12 @@ class MinimizerEngine {
     };
 
     std::vector<Kmer> Minimize(
-            const std::unique_ptr<biosoup::NucleicAcid>& sequence,
+            const std::unique_ptr<biosoup::NucleicAcid> &sequence,
             bool minhash = false) const;
 
     std::vector<biosoup::Overlap> Chain(
             std::uint64_t lhs_id,
-            std::vector<Match>&& matches) const;
+            std::vector<Match> &&matches) const;
 
     template<typename RandomAccessIterator, typename Compare>
     static void RadixSort(

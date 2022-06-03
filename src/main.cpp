@@ -32,26 +32,26 @@ struct option options[] = {
 };
 
 std::unique_ptr<bioparser::Parser<biosoup::NucleicAcid>>
-CreateParser(const std::string& path) {
-    auto is_suffix = [] (const std::string& s, const std::string& suff) {
+CreateParser(const std::string &path) {
+    auto is_suffix = [](const std::string &s, const std::string &suff) {
         return s.size() >= suff.size() && s.compare(s.size() - suff.size(), suff.size(), suff) == 0;
     };
 
     if (is_suffix(path, ".fasta") || is_suffix(path, ".fasta.gz") ||
-            is_suffix(path, ".fna")   || is_suffix(path, ".fna.gz")   ||
-            is_suffix(path, ".fa")    || is_suffix(path, ".fa.gz")) {
+            is_suffix(path, ".fna") || is_suffix(path, ".fna.gz") ||
+            is_suffix(path, ".fa") || is_suffix(path, ".fa.gz")) {
         try {
             return bioparser::Parser<biosoup::NucleicAcid>::Create<bioparser::FastaParser>(path);  // NOLINT
-        } catch (const std::invalid_argument& exception) {
+        } catch (const std::invalid_argument &exception) {
             std::cerr << exception.what() << std::endl;
             return nullptr;
         }
     }
     if (is_suffix(path, ".fastq") || is_suffix(path, ".fastq.gz") ||
-            is_suffix(path, ".fq")    || is_suffix(path, ".fq.gz")) {
+            is_suffix(path, ".fq") || is_suffix(path, ".fq.gz")) {
         try {
             return bioparser::Parser<biosoup::NucleicAcid>::Create<bioparser::FastqParser>(path);  // NOLINT
-        } catch (const std::invalid_argument& exception) {
+        } catch (const std::invalid_argument &exception) {
             std::cerr << exception.what() << std::endl;
             return nullptr;
         }
@@ -106,7 +106,7 @@ void Help() {
 
 }  // namespace
 
-int main(int argc, char** argv) {
+int main(int argc, char **argv) {
     std::uint32_t k = 15;
     std::uint32_t w = 5;
     std::uint32_t bandwidth = 500;
@@ -119,20 +119,30 @@ int main(int argc, char** argv) {
 
     std::vector<std::string> input_paths;
 
-    const char* optstr = "k:w:f:t:h";
+    const char *optstr = "k:w:f:t:h";
     char arg;
     while ((arg = getopt_long(argc, argv, optstr, options, nullptr)) != -1) {
         switch (arg) {
-            case 'k': k = std::atoi(optarg); break;
-            case 'w': w = std::atoi(optarg); break;
-            case 'b': bandwidth = std::atoi(optarg); break;
-            case 'c': chain = std::atoi(optarg); break;
-            case 'm': matches = std::atoi(optarg); break;
-            case 'g': gap = std::atoi(optarg); break;
-            case 'f': frequency = std::atof(optarg); break;
-            case 'M': minhash = true; break;
-            case 't': num_threads = std::atoi(optarg); break;
-            case 'h': Help(); return 0;
+            case 'k': k = std::atoi(optarg);
+                break;
+            case 'w': w = std::atoi(optarg);
+                break;
+            case 'b': bandwidth = std::atoi(optarg);
+                break;
+            case 'c': chain = std::atoi(optarg);
+                break;
+            case 'm': matches = std::atoi(optarg);
+                break;
+            case 'g': gap = std::atoi(optarg);
+                break;
+            case 'f': frequency = std::atof(optarg);
+                break;
+            case 'M': minhash = true;
+                break;
+            case 't': num_threads = std::atoi(optarg);
+                break;
+            case 'h': Help();
+                return 0;
             default: return 1;
         }
     }
@@ -157,7 +167,7 @@ int main(int argc, char** argv) {
     }
 
     bool is_ava = false;
-    std::unique_ptr<bioparser::Parser<biosoup::NucleicAcid>> sparser = nullptr;
+    std::unique_ptr<bioparser::Parser<biosoup::NucleicAcid>> sparser;
     if (input_paths.size() > 1) {
         sparser = CreateParser(input_paths[1]);
         if (sparser == nullptr) {
@@ -187,7 +197,7 @@ int main(int argc, char** argv) {
         std::vector<std::unique_ptr<biosoup::NucleicAcid>> targets;
         try {
             targets = tparser->Parse(1ULL << 32);
-        } catch (std::invalid_argument& exception) {
+        } catch (std::invalid_argument &exception) {
             std::cerr << exception.what() << std::endl;
             return 1;
         }
@@ -218,7 +228,7 @@ int main(int argc, char** argv) {
             std::vector<std::unique_ptr<biosoup::NucleicAcid>> sequences;
             try {
                 sequences = sparser->Parse(1U << 30);
-            } catch (std::invalid_argument& exception) {
+            } catch (std::invalid_argument &exception) {
                 std::cerr << exception.what() << std::endl;
                 return 1;
             }
@@ -228,12 +238,12 @@ int main(int argc, char** argv) {
             }
 
             std::vector<std::future<std::vector<biosoup::Overlap>>> futures;
-            for (const auto& it : sequences) {
+            for (const auto &it : sequences) {
                 if (is_ava && it->id >= num_targets) {
                     continue;
                 }
                 futures.emplace_back(thread_pool->Submit(
-                        [&] (const std::unique_ptr<biosoup::NucleicAcid>& sequence)
+                        [&](const std::unique_ptr<biosoup::NucleicAcid> &sequence)
                                 -> std::vector<biosoup::Overlap> {
                             return minimizer_engine.Map(sequence, is_ava, is_ava, minhash);
                         },
@@ -245,8 +255,8 @@ int main(int argc, char** argv) {
 
             std::uint64_t rhs_offset = targets.front()->id;
             std::uint64_t lhs_offset = sequences.front()->id;
-            for (auto& it : futures) {
-                for (const auto& jt : it.get()) {
+            for (auto &it : futures) {
+                for (const auto &jt : it.get()) {
                     std::cout << sequences[jt.lhs_id - lhs_offset]->name << "\t"
                               << sequences[jt.lhs_id - lhs_offset]->inflated_len << "\t"
                               << jt.lhs_begin << "\t"
