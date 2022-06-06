@@ -66,7 +66,7 @@ if (NOT bioparser_FOUND)
     endif ()
 endif ()
 
-add_executable(RamAnalyser src/main.cpp src/ram/minimizer_engine.cpp src/ram/minimizer_engine.h src/analyser/analyser.cpp src/analyser/analyser.h)
+add_executable(RamAnalyser src/main.cpp src/ram/minimizer_engine.cpp src/ram/minimizer_engine.h src/analyser/analyser.cpp src/analyser/analyser.h src/edlib/edlib.cpp src/edlib/edlib.h)
 
 target_link_libraries(RamAnalyser
         biosoup::biosoup
