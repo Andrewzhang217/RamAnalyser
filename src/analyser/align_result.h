@@ -1,15 +1,15 @@
 #ifndef RAMANALYSER_SRC_ANALYSER_ALIGN_RESULT_H_
 #define RAMANALYSER_SRC_ANALYSER_ALIGN_RESULT_H_
 
+#include <cstdint>
 #include <vector>
 
 namespace ram_analyser {
 class AlignResult {
 
   public :
-    AlignResult();
+    AlignResult() = default;
     AlignResult(AlignResult &&r) noexcept;
-
     AlignResult &operator=(AlignResult &&r) noexcept;
 
   private:
@@ -17,7 +17,7 @@ class AlignResult {
     // which target position? -> which ins at that position? -> which row?
     std::vector<std::vector<std::vector<char>>>
             ins_columns;
-    std::uint32_t width;
+    std::uint32_t width{};
 
 };
 }
