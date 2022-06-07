@@ -31,8 +31,7 @@ struct option options[] = {
         {nullptr, no_argument, nullptr, 0}
 };
 
-std::unique_ptr<bioparser::Parser<biosoup::NucleicAcid>>
-CreateParser(const std::string &path) {
+std::unique_ptr<bioparser::Parser<biosoup::NucleicAcid>> CreateParser(const std::string &path) {
     auto is_suffix = [](const std::string &s, const std::string &suff) {
         return s.size() >= suff.size() && s.compare(s.size() - suff.size(), suff.size(), suff) == 0;
     };
