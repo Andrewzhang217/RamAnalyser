@@ -1,4 +1,5 @@
 #include "analyser.h"
+#include "biosoup/progress_bar.hpp"
 
 #include <cstdlib>
 
@@ -6,8 +7,15 @@ namespace ram_analyser {
 Analyser::Analyser(std::vector<std::string> sequences_file_paths,
                    std::shared_ptr<thread_pool::ThreadPool> &pool,
                    std::uint8_t kmer_len,
-                   std::uint8_t window_len)
-        : paths_(std::move(sequences_file_paths)), minimizer_engine_(pool, kmer_len, window_len) {
+                   std::uint8_t window_len,
+                   std::uint32_t num_threads,
+                   bool minhash,
+                   double frequency)
+        : paths_(std::move(sequences_file_paths)),
+          minimizer_engine_(pool, kmer_len, window_len),
+          num_threads_(num_threads),
+          minhash_(minhash),
+          frequency_(frequency) {
 }
 void Analyser::find_true_overlaps() {
 
@@ -68,58 +76,32 @@ std::unique_ptr<bioparser::Parser<biosoup::NucleicAcid>> Analyser::CreateParser(
 bool Analyser::IsSuffix(const std::string &s, const std::string &suff) {
     return s.size() >= suff.size() && s.compare(s.size() - suff.size(), suff.size(), suff) == 0;
 }
-std::vector<biosoup::Overlap> Analyser::FindOverlaps() {
-    std::uint32_t k = 15;
-    std::uint32_t w = 5;
-    std::uint32_t bandwidth = 500;
-    std::uint32_t chain = 4;
-    std::uint32_t matches = 100;
-    std::uint32_t gap = 10000;
-    double frequency = 0.001;
-    bool minhash = false;
-    std::uint32_t num_threads = 1;
+std::vector<std::unique_ptr<biosoup::NucleicAcid>> Analyser::FindOverlaps() {
 
-    std::vector<std::string> input_paths;
-
-    for (auto i = optind; i < argc; ++i) {
-        input_paths.emplace_back(argv[i]);
-    }
-
-    if (input_paths.empty()) {
-        std::cerr << "[ram::] error: missing target file" << std::endl;
-        return 1;
-    }
-
-    auto tparser = CreateParser(input_paths[0]);
-    if (tparser == nullptr) {
-        return 1;
-    }
-
+    auto target_parser = CreateParser(paths_[0]);
     bool is_all_versus_all = false;
-    std::unique_ptr<bioparser::Parser<biosoup::NucleicAcid>> sparser;
-    if (input_paths.size() > 1) {
-        sparser = CreateParser(input_paths[1]);
-        if (sparser == nullptr) {
-            return 1;
-        }
-        is_all_versus_all = input_paths[0] == input_paths[1];
+    std::unique_ptr<bioparser::Parser<biosoup::NucleicAcid>> sequence_parser;
+    if (paths_.size() > 1) {
+        sequence_parser = CreateParser(paths_[1]);
+        is_all_versus_all = paths_[0] == paths_[1];
     } else {
-        sparser = CreateParser(input_paths[0]);
+        sequence_parser = CreateParser(paths_[0]);
         is_all_versus_all = true;
     }
 
-    auto thread_pool = std::make_shared<thread_pool::ThreadPool>(num_threads);
+    auto thread_pool = std::make_shared<thread_pool::ThreadPool>(num_threads_);
     biosoup::Timer timer{};
+    std::vector<std::unique_ptr<biosoup::NucleicAcid>> sequences;
 
     while (true) {
         timer.Start();
 
         std::vector<std::unique_ptr<biosoup::NucleicAcid>> targets;
         try {
-            targets = tparser->Parse(1ULL << 32);
+            targets = target_parser->Parse(1ULL << 32);
         } catch (std::invalid_argument &exception) {
             std::cerr << exception.what() << std::endl;
-            return 1;
+            return {};
         }
 
         if (targets.empty()) {
@@ -132,8 +114,8 @@ std::vector<biosoup::Overlap> Analyser::FindOverlaps() {
 
         timer.Start();
 
-        minimizer_engine.Minimize(targets.begin(), targets.end(), minhash);
-        minimizer_engine.Filter(frequency);
+        minimizer_engine_.Minimize(targets.begin(), targets.end(), minhash_);
+        minimizer_engine_.Filter(frequency_);
 
         std::cerr << "[ram::] minimized targets "
                   << std::fixed << timer.Stop() << "s"
@@ -144,13 +126,11 @@ std::vector<biosoup::Overlap> Analyser::FindOverlaps() {
 
         while (true) {
             timer.Start();
-
-            std::vector<std::unique_ptr<biosoup::NucleicAcid>> sequences;
             try {
-                sequences = sparser->Parse(1U << 30);
+                sequences = sequence_parser->Parse(1U << 30);
             } catch (std::invalid_argument &exception) {
                 std::cerr << exception.what() << std::endl;
-                return 1;
+                return {};
             }
 
             if (sequences.empty()) {
@@ -159,13 +139,13 @@ std::vector<biosoup::Overlap> Analyser::FindOverlaps() {
 
             std::vector<std::future<std::vector<biosoup::Overlap>>> futures;
             for (const auto &it : sequences) {
-                if (is_ava && it->id >= num_targets) {
+                if (is_all_versus_all && it->id >= num_targets) {
                     continue;
                 }
                 futures.emplace_back(thread_pool->Submit(
                         [&](const std::unique_ptr<biosoup::NucleicAcid> &sequence)
                                 -> std::vector<biosoup::Overlap> {
-                            return minimizer_engine.Map(sequence, is_ava, is_ava, minhash);
+                            return minimizer_engine_.Map(sequence, is_all_versus_all, is_all_versus_all, minhash_);
                         },
                         std::ref(it)));
             }
@@ -204,18 +184,17 @@ std::vector<biosoup::Overlap> Analyser::FindOverlaps() {
             std::cerr << std::endl;
             timer.Stop();
 
-            if (is_ava && biosoup::NucleicAcid::num_objects >= num_targets) {
+            if (is_all_versus_all && biosoup::NucleicAcid::num_objects >= num_targets) {
                 break;
             }
         }
 
-        sparser->Reset();
+        sequence_parser->Reset();
         biosoup::NucleicAcid::num_objects = num_targets;
     }
 
     std::cerr << "[ram::] " << timer.elapsed_time() << "s" << std::endl;
-
-    return {};
+    return sequences;
 }
 
 }

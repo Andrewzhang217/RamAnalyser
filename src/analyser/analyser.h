@@ -23,11 +23,15 @@ class Analyser {
     Analyser(std::vector<std::string> sequences_file_paths,
              std::shared_ptr<thread_pool::ThreadPool> &pool,
              std::uint8_t kmer_len,
-             std::uint8_t window_len);
+             std::uint8_t window_len,
+             std::uint32_t num_threads = 1,
+             bool minhash = false,
+             double frequency = 0.001
+    );
 
-    std::unique_ptr<bioparser::Parser<biosoup::NucleicAcid>> CreateParser(const std::string &path);
+    static std::unique_ptr<bioparser::Parser<biosoup::NucleicAcid>> CreateParser(const std::string &path);
     static bool IsSuffix(const std::string &s, const std::string &suff);
-    std::vector<biosoup::Overlap> FindOverlaps();
+    std::vector<std::unique_ptr<biosoup::NucleicAcid>> FindOverlaps();
 
     void find_true_overlaps();
 
@@ -54,6 +58,9 @@ class Analyser {
   private:
     std::vector<std::string> paths_;
     ram::MinimizerEngine minimizer_engine_;
+    std::uint32_t num_threads_;
+    bool minhash_;
+    double frequency_;
 
 };
 
