@@ -9,6 +9,7 @@ include(FetchContent)
 find_package(biosoup 0.10.0 QUIET)
 find_package(thread_pool 4.0.0 QUIET)
 find_package(bioparser 3.0.13 QUIET)
+find_package(ram 2.2.0 QUIET)
 
 if (NOT biosoup_FOUND)
     if (ram_install)
@@ -66,9 +67,26 @@ if (NOT bioparser_FOUND)
     endif ()
 endif ()
 
-add_executable(RamAnalyser src/main.cpp src/analyser/analyser.cpp src/analyser/analyser.h src/analyser/align_result.cpp src/analyser/align_result.h src/analyser/input.cpp src/analyser/input.h)
+if (NOT ram_FOUND)
+    FetchContent_Declare(
+            ram
+            GIT_REPOSITORY https://github.com/lbcb-sci/ram.git
+            GIT_TAG 2.2.0)
+
+    FetchContent_GetProperties(ram)
+    if (NOT ram_POPULATED)
+        FetchContent_Populate(ram)
+        add_subdirectory(
+                ${ram_SOURCE_DIR}
+                ${ram_BINARY_DIR}
+                EXCLUDE_FROM_ALL)
+    endif ()
+endif ()
+
+add_executable(RamAnalyser src/analyser/analyser.cpp src/analyser/analyser.h src/analyser/align_result.cpp src/analyser/align_result.h src/analyser/input.cpp src/analyser/input.h)
 
 target_link_libraries(RamAnalyser
         biosoup::biosoup
         thread_pool::thread_pool
-        bioparser::bioparser)
+        bioparser::bioparser
+        ram::ram)
