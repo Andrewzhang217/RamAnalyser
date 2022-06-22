@@ -1,0 +1,6 @@
+[submodule "bioparser"]
+	path = bioparser
+	url = https://github.com/rvaser/bioparser.git
+[submodule "ram"]
+	path = ram
+	url = https://github.com/lbcb-sci/ram.git
