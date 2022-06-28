@@ -83,10 +83,24 @@ if (NOT ram_FOUND)
     endif ()
 endif ()
 
-add_executable(RamAnalyser src/analyser/analyser.cpp src/analyser/analyser.h src/analyser/align_result.cpp src/analyser/align_result.h src/analyser/input.cpp src/analyser/input.h)
+file(GLOB_RECURSE srcs RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "src/**.cpp")
+file(GLOB_RECURSE headers RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "src/**.h")
+add_library(RamAnalyser ${srcs} ${headers})
 
+target_include_directories(RamAnalyser
+        PUBLIC
+        "$<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include>")
 target_link_libraries(RamAnalyser
         biosoup::biosoup
         thread_pool::thread_pool
         bioparser::bioparser
         ram::ram)
+target_compile_options(RamAnalyser PUBLIC
+        $<$<CONFIG:Debug,RelWithDebInfo>:-fsanitize=address>
+        $<$<CONFIG:Debug,RelWithDebInfo>:-fno-omit-frame-pointer>)
+target_link_options(RamAnalyser PUBLIC
+        $<$<CONFIG:Debug,RelWithDebInfo>:-fsanitize=address>)
+
+
+## this makes the headers accessible for other projects which uses spa lib
+#target_include_directories(spa PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)

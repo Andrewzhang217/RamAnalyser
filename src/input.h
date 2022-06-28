@@ -10,12 +10,14 @@ class Input {
 
   public:
     explicit Input(const std::string &path);
-    static bool IsSuffix(const std::string &s, const std::string &suff);
-    std::vector<std::unique_ptr<biosoup::NucleicAcid>> ParseFile();
+    std::vector<std::unique_ptr<biosoup::NucleicAcid>> Sequences();
 
   private:
+    static bool IsSuffix(const std::string &s, const std::string &suff);
+    void ParseFile();
     const std::string &path_;
+    std::vector<std::unique_ptr<biosoup::NucleicAcid>> sequences_;
 };
-}
+} // namespace ram_analyser
 
 #endif //RAMANALYSER_SRC_ANALYSER_INPUT_H_
