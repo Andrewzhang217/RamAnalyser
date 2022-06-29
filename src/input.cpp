@@ -19,6 +19,7 @@ void Input::ParseFile() {
         try {
             auto parser = bioparser::Parser<biosoup::NucleicAcid>::Create<bioparser::FastaParser>(path_);
             sequences_ = parser->Parse(-1);
+            return;
         } catch (const std::invalid_argument &exception) {
             std::cerr << exception.what() << std::endl;
             return;
@@ -29,6 +30,7 @@ void Input::ParseFile() {
         try {
             auto parser = bioparser::Parser<biosoup::NucleicAcid>::Create<bioparser::FastqParser>(path_);
             sequences_ = parser->Parse(-1);
+            return;
         } catch (const std::invalid_argument &exception) {
             std::cerr << exception.what() << std::endl;
             return;
