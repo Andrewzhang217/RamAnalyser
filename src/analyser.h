@@ -22,15 +22,17 @@
 namespace ram_analyser {
 class Analyser {
   public:
-    using TrueOverlaps = std::set<std::pair<std::uint32_t, u_int32_t>>;
+    using SetOverlaps = std::set<std::pair<std::uint32_t, u_int32_t>>;
     Analyser(const std::string &sequences_file_path,
              std::uint8_t kmer_len,
              std::uint8_t window_len
     );
-
     double FindPrecision();
     double FindRecall();
-    TrueOverlaps FindTrueOverlaps();
+    SetOverlaps FindTrueRamOverlaps();
+    SetOverlaps FindFalsePositive();
+    void FindAllTrueOverlaps();
+    static std::uint32_t num_of_true_ram_overlaps;
     static std::uint32_t num_of_true_overlaps;
 
   private:
@@ -39,8 +41,9 @@ class Analyser {
     std::uint8_t window_len_;
     std::vector<std::unique_ptr<biosoup::NucleicAcid>> targets_;
     std::vector<std::vector<biosoup::Overlap>> overlaps_;
+    SetOverlaps all_true_overlaps_;
     void Initialise();
-    bool IsTrueOverlap(const biosoup::Overlap &overlap);
+    bool IsTrueOverlap(std::unique_ptr<biosoup::NucleicAcid> &lhs, std::unique_ptr<biosoup::NucleicAcid> &rhs);
     std::pair<std::uint32_t,
               std::uint32_t> FindRange(uint32_t id); // Extract the start and end positions of the simulated read
 };

@@ -3,8 +3,9 @@
 #include <cstdint>
 #include <utility>
 
-namespace ram_analyser {
+std::atomic<std::uint32_t> biosoup::NucleicAcid::num_objects{0};
 
+namespace ram_analyser {
 Processor::Processor(std::shared_ptr<thread_pool::ThreadPool> &pool,
                      std::uint8_t kmer_len,
                      std::uint8_t window_len,
@@ -15,7 +16,7 @@ Processor::Processor(std::shared_ptr<thread_pool::ThreadPool> &pool,
 std::vector<std::vector<biosoup::Overlap>> Processor::FindOverlaps() {
     minimizer_engine_.Minimize(targets_.begin(), targets_.end(), false); // set dafault minhash to false
     minimizer_engine_.Filter(0.001); // set default frequency to 0.001
-    std::uint64_t num_targets = biosoup::NucleicAcid::num_objects;
+    std::uint32_t num_targets = biosoup::NucleicAcid::num_objects.load();
     biosoup::NucleicAcid::num_objects = 0;
     std::vector<std::vector<biosoup::Overlap>> results;
     while (true) {

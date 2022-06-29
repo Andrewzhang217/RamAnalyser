@@ -100,7 +100,7 @@ target_compile_options(RamAnalyser PUBLIC
         $<$<CONFIG:Debug,RelWithDebInfo>:-fno-omit-frame-pointer>)
 target_link_options(RamAnalyser PUBLIC
         $<$<CONFIG:Debug,RelWithDebInfo>:-fsanitize=address>)
-
+include(${CMAKE_CURRENT_LIST_DIR}/test/RamAnalyserTest.cmake)
 
 ## this makes the headers accessible for other projects which uses spa lib
 #target_include_directories(spa PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
