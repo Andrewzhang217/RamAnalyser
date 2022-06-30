@@ -31,6 +31,8 @@ class Analyser {
     double FindRecall();
     SetOverlaps FindTrueRamOverlaps();
     SetOverlaps FindFalsePositive();
+    SetOverlaps FindFalseNegative();
+    void ConvertRamOverlapsToIds();
     void FindAllTrueOverlaps();
     static std::uint32_t num_of_true_ram_overlaps;
     static std::uint32_t num_of_true_overlaps;
@@ -40,7 +42,8 @@ class Analyser {
     std::uint8_t kmer_len_;
     std::uint8_t window_len_;
     std::vector<std::unique_ptr<biosoup::NucleicAcid>> targets_;
-    std::vector<std::vector<biosoup::Overlap>> overlaps_;
+    std::vector<std::vector<biosoup::Overlap>> ram_overlaps_;
+    SetOverlaps ram_overlaps_ids_;
     SetOverlaps all_true_overlaps_;
     void Initialise();
     bool IsTrueOverlap(std::unique_ptr<biosoup::NucleicAcid> &lhs, std::unique_ptr<biosoup::NucleicAcid> &rhs);

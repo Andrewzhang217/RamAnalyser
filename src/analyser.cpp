@@ -1,6 +1,7 @@
 #include "analyser.h"
 #include "biosoup/progress_bar.hpp"
 
+#include <cassert>
 #include <cstdlib>
 #include <utility>
 
@@ -19,23 +20,56 @@ void Analyser::Initialise() {
     auto thread_pool = std::make_shared<thread_pool::ThreadPool>(num_threads);
     Processor processor
             {thread_pool, kmer_len_, window_len_, targets};
-    overlaps_ = processor.FindOverlaps();
+    ram_overlaps_ = processor.FindOverlaps();
+    ConvertRamOverlapsToIds();
+    FindAllTrueOverlaps();
 }
 Analyser::SetOverlaps Analyser::FindTrueRamOverlaps() {
-    FindAllTrueOverlaps();
+    assert(!ram_overlaps_ids_.empty());
+    if (all_true_overlaps_.empty()) return {};
     std::set<std::pair<std::uint32_t, u_int32_t>> set;
-    for (const auto &it : overlaps_) {
-        for (const auto &overlap : it) {
-            if (all_true_overlaps_.find(std::pair(overlap.lhs_id, overlap.rhs_id)) != all_true_overlaps_.end()) {
-                set.emplace(overlap.lhs_id, overlap.rhs_id);
-            }
+
+    for (const auto &overlap : ram_overlaps_ids_) {
+        if (all_true_overlaps_.find(std::pair(overlap.first, overlap.second)) != all_true_overlaps_.end()) {
+            set.emplace(overlap.first, overlap.second);
         }
     }
+
     num_of_true_ram_overlaps = set.size();
     return {std::move(set)};
 }
 Analyser::SetOverlaps Analyser::FindFalsePositive() {
-    return {};
+    assert(!ram_overlaps_ids_.empty());
+    if (all_true_overlaps_.empty()) return ram_overlaps_ids_;
+    auto false_positive = ram_overlaps_ids_;
+
+    for (auto &overlap : ram_overlaps_ids_) {
+        if (all_true_overlaps_.find(overlap) != all_true_overlaps_.end()) {
+            false_positive.erase(overlap);
+        }
+    }
+    return false_positive;
+}
+Analyser::SetOverlaps Analyser::FindFalseNegative() {
+    if (all_true_overlaps_.empty()) return {};
+    auto false_negative = all_true_overlaps_;
+    auto false_positive = FindTrueRamOverlaps();
+
+    for (auto &overlap : false_positive) {
+        if (false_negative.find(overlap) != false_negative.end()) {
+            false_negative.erase(overlap);
+        }
+    }
+    return false_negative;
+}
+void Analyser::ConvertRamOverlapsToIds() {
+    std::set<std::pair<std::uint32_t, u_int32_t>> set;
+    for (const auto &it : ram_overlaps_) {
+        for (const auto &overlap : it) {
+            set.emplace(overlap.lhs_id, overlap.rhs_id);
+        }
+    }
+    ram_overlaps_ids_ = std::move(set);
 }
 void Analyser::FindAllTrueOverlaps() {
     std::set<std::pair<std::uint32_t, u_int32_t>> set;
@@ -48,7 +82,7 @@ void Analyser::FindAllTrueOverlaps() {
     all_true_overlaps_ = std::move(set);
 }
 double Analyser::FindPrecision() {
-    return static_cast<double> (num_of_true_ram_overlaps) / static_cast<double>(overlaps_.size());
+    return static_cast<double> (num_of_true_ram_overlaps) / static_cast<double>(ram_overlaps_.size());
 }
 double Analyser::FindRecall() {
     // tp / (tp + fn)
