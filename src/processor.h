@@ -14,7 +14,9 @@ class Processor {
               std::uint8_t window_len,
               std::vector<std::unique_ptr<biosoup::NucleicAcid>> &targets);
 
-    std::vector<std::vector<biosoup::Overlap>> FindOverlaps();
+    std::vector<std::vector<biosoup::Overlap>> FindAvaOverlaps();
+    std::vector<std::vector<biosoup::Overlap>> FindOverlaps(int start,
+                                                            int end); // find the overlaps among the reads within the range(start, end) and all reads
 
   private:
     std::shared_ptr<thread_pool::ThreadPool> &pool_;

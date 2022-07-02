@@ -5,22 +5,38 @@
 #include <cstdlib>
 #include <utility>
 
-std::uint32_t ram_analyser::Analyser::num_of_true_ram_overlaps{0};
-std::uint32_t ram_analyser::Analyser::num_of_true_overlaps{0};
-
 namespace ram_analyser {
 Analyser::Analyser(const std::string &sequences_file_path,
                    std::uint8_t kmer_len,
                    std::uint8_t window_len)
-        : path(sequences_file_path), kmer_len_(kmer_len), window_len_(window_len) { Initialise(); }
+        : path_(sequences_file_path), kmer_len_(kmer_len), window_len_(window_len) { Initialise(); }
+Analyser::Analyser(const std::string &sequences_file_path,
+                   std::uint8_t kmer_len,
+                   std::uint8_t window_len,
+                   int start,
+                   int end) :
+        path_(sequences_file_path), kmer_len_(kmer_len), window_len_(window_len) {
+    Initialise(start, end);
+}
 void Analyser::Initialise() {
     std::uint32_t num_threads = 1;
-    Input target{path};
+    Input target{path_};
     auto targets = target.Sequences();
     auto thread_pool = std::make_shared<thread_pool::ThreadPool>(num_threads);
     Processor processor
             {thread_pool, kmer_len_, window_len_, targets};
-    ram_overlaps_ = processor.FindOverlaps();
+    ram_overlaps_ = processor.FindAvaOverlaps();
+    ConvertRamOverlapsToIds();
+    FindAllTrueOverlaps();
+}
+void Analyser::Initialise(int start, int end) {
+    std::uint32_t num_threads = 1;
+    Input target{path_};
+    auto targets = target.Sequences();
+    auto thread_pool = std::make_shared<thread_pool::ThreadPool>(num_threads);
+    Processor processor
+            {thread_pool, kmer_len_, window_len_, targets};
+    ram_overlaps_ = processor.FindOverlaps(start, end);
     ConvertRamOverlapsToIds();
     FindAllTrueOverlaps();
 }
