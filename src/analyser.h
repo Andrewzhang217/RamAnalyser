@@ -43,7 +43,7 @@ class Analyser {
     std::uint32_t num_of_true_ram_overlaps = 0;
     std::uint32_t num_of_true_overlaps = 0;
 
-  //private:
+  private:
     const std::string &path_;
     std::uint8_t kmer_len_;
     std::uint8_t window_len_;

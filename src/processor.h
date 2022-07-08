@@ -18,7 +18,7 @@ class Processor {
     SetOverlaps FindAvaOverlaps();
     SetOverlaps FindOverlaps(int start,
                              int end); // find the overlaps among the reads within the range(start, end) and all reads
-    static SetOverlaps ConvertRamOverlapsToIds(std::vector<std::vector<biosoup::Overlap>>& overlaps);
+    static SetOverlaps ConvertRamOverlapsToIds(std::vector<std::vector<biosoup::Overlap>> &overlaps);
   private:
     ram::MinimizerEngine minimizer_engine_;
     std::vector<std::unique_ptr<biosoup::NucleicAcid>> &targets_;

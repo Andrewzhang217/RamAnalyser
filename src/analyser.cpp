@@ -8,7 +8,7 @@ namespace ram_analyser {
 Analyser::Analyser(const std::string &sequences_file_path,
                    std::uint8_t kmer_len,
                    std::uint8_t window_len)
-        : path_(sequences_file_path), kmer_len_(kmer_len), window_len_(window_len), start_(0),end_(0) { Initialise(); }
+        : path_(sequences_file_path), kmer_len_(kmer_len), window_len_(window_len), start_(0), end_(0) { Initialise(); }
 Analyser::Analyser(const std::string &sequences_file_path,
                    std::uint8_t kmer_len,
                    std::uint8_t window_len,
@@ -24,7 +24,7 @@ void Analyser::Initialise() {
     auto thread_pool = std::make_shared<thread_pool::ThreadPool>(num_threads);
     Processor processor
             {thread_pool, kmer_len_, window_len_, targets_};
-    if(end_ != 0) {
+    if (end_ != 0) {
         ram_overlaps_ = processor.FindOverlaps(start_, end_);
     } else {
         ram_overlaps_ = processor.FindAvaOverlaps();
@@ -122,6 +122,6 @@ bool Analyser::SameContig(std::uint32_t lhs_id, std::uint32_t rhs_id) {
     std::string name_rhs = targets_[rhs_id]->name;
     auto curr_lhs = std::find_if(name_lhs.begin(), name_lhs.end(), [](auto c) { return c == '_'; });
     auto curr_rhs = std::find_if(name_rhs.begin(), name_rhs.end(), [](auto c) { return c == '_'; });
-    return name_lhs.substr(0,curr_lhs - name_lhs.begin()) == name_rhs.substr(0, curr_rhs - name_rhs.begin());
+    return name_lhs.substr(0, curr_lhs - name_lhs.begin()) == name_rhs.substr(0, curr_rhs - name_rhs.begin());
 }
 } // namespace ram_analyser
