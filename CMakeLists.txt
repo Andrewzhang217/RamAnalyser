@@ -85,7 +85,7 @@ endif ()
 
 file(GLOB_RECURSE srcs RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "src/**.cpp")
 file(GLOB_RECURSE headers RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "src/**.h")
-add_library(RamAnalyser ${srcs} ${headers})
+add_library(RamAnalyser ${srcs} ${headers} src/alias.h)
 
 target_include_directories(RamAnalyser
         PUBLIC

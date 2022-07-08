@@ -1,6 +1,7 @@
 #ifndef RAMANALYSER_SRC_ANALYSER_PROCESSOR_H_
 #define RAMANALYSER_SRC_ANALYSER_PROCESSOR_H_
 
+#include "alias.h"
 #include "ram/minimizer_engine.hpp"
 
 #include <cstdint>
@@ -14,10 +15,11 @@ class Processor {
               std::uint8_t window_len,
               std::vector<std::unique_ptr<biosoup::NucleicAcid>> &targets);
 
-    std::vector<std::vector<biosoup::Overlap>> FindOverlaps();
-
+    SetOverlaps FindAvaOverlaps();
+    SetOverlaps FindOverlaps(int start,
+                             int end); // find the overlaps among the reads within the range(start, end) and all reads
+    static SetOverlaps ConvertRamOverlapsToIds(std::vector<std::vector<biosoup::Overlap>> &overlaps);
   private:
-    std::shared_ptr<thread_pool::ThreadPool> &pool_;
     ram::MinimizerEngine minimizer_engine_;
     std::vector<std::unique_ptr<biosoup::NucleicAcid>> &targets_;
 };
