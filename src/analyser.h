@@ -10,6 +10,7 @@
 #include <vector>
 #include <iostream>
 
+#include "alias.h"
 #include "biosoup/nucleic_acid.hpp"
 #include "biosoup/timer.hpp"
 #include "bioparser/fasta_parser.hpp"
@@ -22,7 +23,6 @@
 namespace ram_analyser {
 class Analyser {
   public:
-    using SetOverlaps = std::set<std::pair<std::uint32_t, u_int32_t>>;
     Analyser(const std::string &sequences_file_path,
              std::uint8_t kmer_len,
              std::uint8_t window_len
@@ -33,29 +33,31 @@ class Analyser {
              int start,
              int end
     );
-    double FindPrecision();
-    double FindRecall();
+    [[nodiscard]] double FindPrecision() const;
+    [[nodiscard]] double FindRecall() const;
     SetOverlaps FindTrueRamOverlaps();
     SetOverlaps FindFalsePositive();
     SetOverlaps FindFalseNegative();
-    void ConvertRamOverlapsToIds();
     void FindAllTrueOverlaps();
+    std::uint32_t num_of_ram_overlaps = 0;
     std::uint32_t num_of_true_ram_overlaps = 0;
     std::uint32_t num_of_true_overlaps = 0;
 
-  private:
+  //private:
     const std::string &path_;
     std::uint8_t kmer_len_;
     std::uint8_t window_len_;
+    int start_;
+    int end_;
     std::vector<std::unique_ptr<biosoup::NucleicAcid>> targets_;
-    std::vector<std::vector<biosoup::Overlap>> ram_overlaps_;
-    SetOverlaps ram_overlaps_ids_;
+    SetOverlaps ram_overlaps_;
     SetOverlaps all_true_overlaps_;
     void Initialise();
-    void Initialise(int start, int end);
     bool IsTrueOverlap(std::unique_ptr<biosoup::NucleicAcid> &lhs, std::unique_ptr<biosoup::NucleicAcid> &rhs);
+    bool SameContig(std::uint32_t lhs_id, std::uint32_t rhs_id);
+  public:
     std::pair<std::uint32_t,
-              std::uint32_t> FindRange(uint32_t id); // Extract the start and end positions of the simulated read
+              std::uint32_t> FindRange(std::uint32_t id); // Extract the start and end positions of the simulated read
 };
 
 } // namespace ram_analyser
