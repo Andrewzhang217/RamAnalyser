@@ -5,30 +5,18 @@
 #include <utility>
 
 namespace ram_analyser {
-Analyser::Analyser(const std::string &sequences_file_path,
-                   std::uint8_t kmer_len,
-                   std::uint8_t window_len)
-        : path_(sequences_file_path), kmer_len_(kmer_len), window_len_(window_len), start_(0), end_(0) { Initialise(); }
-Analyser::Analyser(const std::string &sequences_file_path,
-                   std::uint8_t kmer_len,
-                   std::uint8_t window_len,
-                   int start,
-                   int end) :
-        path_(sequences_file_path), kmer_len_(kmer_len), window_len_(window_len), start_(start), end_(end) {
-    Initialise();
+Analyser::Analyser(const std::string &sequences_file_path, std::uint8_t kmer_len, std::uint8_t window_len, int size,
+                   bool minhash, std::uint8_t num_threads, double frequency) :
+        path_(sequences_file_path), kmer_len_(kmer_len), window_len_(window_len), size_(size){
+    Initialise(minhash, num_threads, size, frequency);
 }
-void Analyser::Initialise() {
-    std::uint32_t num_threads = 40;
+void Analyser::Initialise(bool minhash, std::uint8_t num_threads, int size, double frequency) {
     Input target{path_};
     targets_ = std::move(target.Sequences());
     auto thread_pool = std::make_shared<thread_pool::ThreadPool>(num_threads);
     Processor processor
-            {thread_pool, kmer_len_, window_len_, targets_};
-    if (end_ != 0) {
-        ram_overlaps_ = processor.FindOverlaps(start_, end_);
-    } else {
-        ram_overlaps_ = processor.FindAvaOverlaps();
-    }
+            {thread_pool, kmer_len_, window_len_, targets_, minhash, frequency};
+    ram_overlaps_ = processor.FindOverlaps(size);
     num_of_ram_overlaps = ram_overlaps_.size();
     FindAllTrueOverlaps();
 }
@@ -55,6 +43,7 @@ SetOverlaps Analyser::FindFalsePositive() {
             false_positive.erase(overlap);
         }
     }
+    num_of_false_positives = false_positive.size();
     return false_positive;
 }
 SetOverlaps Analyser::FindFalseNegative() {
@@ -67,11 +56,12 @@ SetOverlaps Analyser::FindFalseNegative() {
             false_negative.erase(overlap);
         }
     }
+    num_of_false_negatives = false_negative.size();
     return false_negative;
 }
 void Analyser::FindAllTrueOverlaps() {
     SetOverlaps set;
-    auto end_pos = end_ == 0 ? targets_.end() : targets_.begin() + end_;
+    auto end_pos = size_ == 0 ? targets_.end() : targets_.begin() + size_;
     for (auto lhs = targets_.begin(); lhs != end_pos; ++lhs) {
         for (auto rhs = lhs + 1; rhs != targets_.end(); ++rhs) {
             if (IsTrueOverlap(*lhs, *rhs)) set.emplace(lhs->get()->id, rhs->get()->id);
