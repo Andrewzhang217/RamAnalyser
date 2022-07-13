@@ -7,10 +7,6 @@
 namespace ram_analyser {
 Analyser::Analyser(const std::string &sequences_file_path,
                    std::uint8_t kmer_len,
-                   std::uint8_t window_len)
-        : path_(sequences_file_path), kmer_len_(kmer_len), window_len_(window_len), start_(0), end_(0) { Initialise(); }
-Analyser::Analyser(const std::string &sequences_file_path,
-                   std::uint8_t kmer_len,
                    std::uint8_t window_len,
                    int start,
                    int end) :
@@ -55,6 +51,7 @@ SetOverlaps Analyser::FindFalsePositive() {
             false_positive.erase(overlap);
         }
     }
+    num_of_false_positives = false_positive.size();
     return false_positive;
 }
 SetOverlaps Analyser::FindFalseNegative() {
@@ -67,6 +64,7 @@ SetOverlaps Analyser::FindFalseNegative() {
             false_negative.erase(overlap);
         }
     }
+    num_of_false_negatives = false_negative.size();
     return false_negative;
 }
 void Analyser::FindAllTrueOverlaps() {

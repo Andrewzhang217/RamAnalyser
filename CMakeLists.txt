@@ -85,7 +85,7 @@ endif ()
 
 file(GLOB_RECURSE srcs RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "src/**.cpp")
 file(GLOB_RECURSE headers RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "src/**.h")
-add_library(RamAnalyser ${srcs} ${headers} src/alias.h)
+add_library(RamAnalyser ${srcs} ${headers})
 
 target_include_directories(RamAnalyser
         PUBLIC
@@ -102,5 +102,9 @@ target_link_options(RamAnalyser PUBLIC
         $<$<CONFIG:Debug,RelWithDebInfo>:-fsanitize=address>)
 include(${CMAKE_CURRENT_LIST_DIR}/test/RamAnalyserTest.cmake)
 
-## this makes the headers accessible for other projects which uses spa lib
-#target_include_directories(spa PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
+add_executable(RamAnalyser_exe
+        src/main.cpp)
+target_link_libraries(RamAnalyser_exe
+        RamAnalyser)
+set_property(TARGET RamAnalyser_exe PROPERTY OUTPUT_NAME RamAnalyser)
+install(TARGETS RamAnalyser_exe DESTINATION ${CMAKE_INSTALL_BINDIR})

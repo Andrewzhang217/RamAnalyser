@@ -25,10 +25,6 @@ class Analyser {
   public:
     Analyser(const std::string &sequences_file_path,
              std::uint8_t kmer_len,
-             std::uint8_t window_len
-    );
-    Analyser(const std::string &sequences_file_path,
-             std::uint8_t kmer_len,
              std::uint8_t window_len,
              int start,
              int end
@@ -41,6 +37,8 @@ class Analyser {
     void FindAllTrueOverlaps();
     std::uint32_t num_of_ram_overlaps = 0;
     std::uint32_t num_of_true_ram_overlaps = 0;
+    std::uint32_t num_of_false_positives = 0;
+    std::uint32_t num_of_false_negatives = 0;
     std::uint32_t num_of_true_overlaps = 0;
 
   private:
