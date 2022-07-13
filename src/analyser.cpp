@@ -6,11 +6,11 @@
 
 namespace ram_analyser {
 Analyser::Analyser(const std::string &sequences_file_path, std::uint8_t kmer_len, std::uint8_t window_len, int size,
-                   bool minhash, std::uint32_t num_threads, double frequency) :
+                   bool minhash, std::uint8_t num_threads, double frequency) :
         path_(sequences_file_path), kmer_len_(kmer_len), window_len_(window_len), size_(size){
     Initialise(minhash, num_threads, size, frequency);
 }
-void Analyser::Initialise(bool minhash, std::uint32_t num_threads, int size, double frequency) {
+void Analyser::Initialise(bool minhash, std::uint8_t num_threads, int size, double frequency) {
     Input target{path_};
     targets_ = std::move(target.Sequences());
     auto thread_pool = std::make_shared<thread_pool::ThreadPool>(num_threads);

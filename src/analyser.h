@@ -24,7 +24,7 @@ namespace ram_analyser {
 class Analyser {
   public:
     Analyser(const std::string &sequences_file_path, std::uint8_t kmer_len, std::uint8_t window_len, int size,
-             bool minhash = false, std::uint32_t num_threads = 10, double frequency = 0.001);
+             bool minhash = false, std::uint8_t num_threads = 10, double frequency = 0.001);
     [[nodiscard]] double FindPrecision() const;
     [[nodiscard]] double FindRecall() const;
     SetOverlaps FindTrueRamOverlaps();
@@ -45,7 +45,7 @@ class Analyser {
     std::vector<std::unique_ptr<biosoup::NucleicAcid>> targets_;
     SetOverlaps ram_overlaps_;
     SetOverlaps all_true_overlaps_;
-    void Initialise(bool minhash, std::uint32_t num_threads, int size, double frequency);
+    void Initialise(bool minhash, std::uint8_t num_threads, int size, double frequency);
     bool IsTrueOverlap(std::unique_ptr<biosoup::NucleicAcid> &lhs, std::unique_ptr<biosoup::NucleicAcid> &rhs);
     bool SameContig(std::uint32_t lhs_id, std::uint32_t rhs_id);
   public:

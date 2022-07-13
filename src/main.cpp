@@ -3,16 +3,42 @@
 
 #include "analyser.h"
 
+void Help() {
+    std::cout << "usage: ./RamAnalyser [options ...] <sequences>\n"
+                 "\n"
+                 "  <target>/<sequences>\n"
+                 "    input file in FASTA/FASTQ format (can be compressed with gzip)\n"
+                 "\n"
+                 "  options:\n"
+                 "    -k <std::uint8_t>\n"
+                 "      default: 15\n"
+                 "      length of minimizers\n"
+                 "    -w <std::uint8_t>\n"
+                 "      default: 5\n"
+                 "      length of sliding window from which minimizers are sampled\n"
+                 "    -f <double>\n"
+                 "      default: 0.001\n"
+                 "      threshold for ignoring most frequent minimizers\n"
+                 "    -M <bool>\n"
+                 "      default: false\n"
+                 "      set minhash to true, use only a portion of all minimizers\n"
+                 "    -t <std::uint8_t>\n"
+                 "      default: 10\n"
+                 "      number of threads\n"
+                 "    -h\n"
+                 "      prints the usage"
+                 << std::endl;
+}
 int main(int argc, char **argv) {
 
     std::uint8_t kmer_len = 15;
     std::uint8_t window_len = 5;
     int size = 1000;
     bool minhash = false;
-    std::uint32_t num_threads = 10;
+    std::uint8_t num_threads = 10;
     double frequency = 0.001;
 
-    const char *optstr = "k:w:s:t:f:M";
+    const char *optstr = "k:w:s:t:f:Mh";
     char arg;
     while ((arg = static_cast<char>(getopt(argc, argv, optstr))) != -1) {
         switch (arg) {
@@ -28,6 +54,7 @@ int main(int argc, char **argv) {
                 break;
             case 'f': frequency = std::stod(optarg);
                 break;
+            case 'h': Help(); return 0;
             default: return 1;
         }
     }
