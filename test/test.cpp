@@ -29,13 +29,13 @@ TEST_CASE("Unit test: Processor") {
     ram_analyser::Input input{input_file_path};
     auto targets = input.Sequences();
     auto thread_pool = std::make_shared<thread_pool::ThreadPool>(20);
-    ram_analyser::Processor processor{thread_pool, 15, 5, targets};
-    auto overlaps_first_1k = processor.FindOverlaps(0, 1000);
+    ram_analyser::Processor processor{thread_pool, 15, 5, targets, false, 0};
+    auto overlaps_first_1k = processor.FindOverlaps(1000);
     std::cout << "num of overlaps found by ram = " << overlaps_first_1k.size() << std::endl;
     REQUIRE(!overlaps_first_1k.empty());
 }
 TEST_CASE("Unit test: Analyser") {
-    ram_analyser::Analyser analyser1{input_file_path, k_mer_length, window_length, 0, 100};
+    ram_analyser::Analyser analyser1{input_file_path, k_mer_length, window_length, 1000};
 //    SECTION("Unit test: FindAllTrueOverlaps") {
     std::cout << "num of all true overlaps: " << analyser1.num_of_true_overlaps << std::endl;
     //}
