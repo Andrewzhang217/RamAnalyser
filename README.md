@@ -35,6 +35,9 @@ usage: ./RamAnalyser [options ...] <sequences>
     -t <std::uint8_t>
       default: 10
       number of threads
+    -s <int>
+      default: 1000
+      sample size of sequences
     -h
       prints the usage
 ```
